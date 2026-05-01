@@ -21,7 +21,7 @@ on:
       project_prefix:
         description: "Same as TF project var (default if empty)"
         type: string
-        default: "k8s-self-managed-503459125797"
+        default: "k8s-Emad-128768042813"
 
 permissions:
   contents: read

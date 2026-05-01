@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: rabbitmq
-          image: k8s-self-managed-503459125797-dev-rabbitmq
+          image: k8s-Emad-128768042813-dev-rabbitmq
           resources:
             requests:
               cpu: 200m

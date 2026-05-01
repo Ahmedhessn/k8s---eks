@@ -42,7 +42,7 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: k8s-self-managed-503459125797-dev-mysql
+          image: k8s-Emad-128768042813-dev-mysql
           resources:
             requests:
               cpu: 250m

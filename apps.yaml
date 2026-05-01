@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: apps
-          image: k8s-self-managed-503459125797-dev-apps
+          image: k8s-Emad-128768042813-dev-apps
           resources:
             requests:
               cpu: 200m
