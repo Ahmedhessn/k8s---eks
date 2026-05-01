@@ -15,6 +15,15 @@ on:
           - unified
           - dev
           - staging
+          - prod
+      kustomize_overlay:
+        description: "Which Kustomize overlay to apply (dev = CI bumps; prod = after promote)"
+        type: choice
+        required: true
+        default: dev
+        options:
+          - dev
+          - prod
       aws_region:
         description: "AWS region"
         type: string
@@ -39,14 +48,18 @@ jobs:
             ENV="${{ inputs.environment }}"
             REGION="${{ inputs.aws_region }}"
             PREFIX="${{ inputs.project_prefix }}"
+            OVERLAY="${{ inputs.kustomize_overlay }}"
           else
             ENV="${{ github.event.client_payload.environment }}"
             REGION="${{ github.event.client_payload.region }}"
             PREFIX="${{ github.event.client_payload.project_prefix }}"
+            OVERLAY="${{ github.event.client_payload.kustomize_overlay }}"
           fi
+          OVERLAY="${OVERLAY:-dev}"
           echo "environment=${ENV}" >> "$GITHUB_OUTPUT"
           echo "region=${REGION}" >> "$GITHUB_OUTPUT"
           echo "prefix=${PREFIX}" >> "$GITHUB_OUTPUT"
+          echo "kustomize_overlay=${OVERLAY}" >> "$GITHUB_OUTPUT"
           if [ "$ENV" = "unified" ]; then
             echo "cluster_name=${PREFIX}-eks" >> "$GITHUB_OUTPUT"
           else
@@ -74,4 +87,4 @@ jobs:
         run: |
           aws eks update-kubeconfig --name "$CLUSTER" --region "$REGION"
           kubectl version --client
-          kubectl apply -k .
+          kubectl apply -k "overlays/${{ steps.meta.outputs.kustomize_overlay }}"

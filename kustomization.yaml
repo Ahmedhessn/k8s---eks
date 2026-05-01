@@ -1,28 +1,5 @@
+## Default local / quick apply: same as dev. For prod use: kubectl apply -k overlays/prod
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: vprofile
 resources:
-  - storageclass-gp3.yaml
-  - mysql.yaml
-  - memcached.yaml
-  - rabbitmq.yaml
-  - apps.yaml
-  - ingress.yaml
-  - hpa/mysql.yaml
-  - hpa/memcached.yaml
-  - hpa/rabbitmq.yaml
-  - hpa/apps.yaml
-images:
-
-  - name: k8s-emad-128768042813-dev-apps
-    newName: 01061875164/tomcatapp
-    newTag: 20260430-0307-02e09cc
-  - name: k8s-emad-128768042813-dev-rabbitmq
-    newName: 01061875164/rabbitmq
-    newTag: 20260430-0311-02e09cc
-  - name: k8s-emad-128768042813-dev-memcached
-    newName: 01061875164/memcached
-    newTag: 20260430-0312-02e09cc
-  - name: k8s-emad-128768042813-dev-mysql
-    newName: 01061875164/dbmysql
-    newTag: 20260430-0925-02e09cc
+  - overlays/dev

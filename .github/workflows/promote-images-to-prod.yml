@@ -1,0 +1,70 @@
+## Copy image newTag (and newName) from overlays/dev → overlays/prod, then optionally deploy prod overlay.
+name: Promote images (dev → prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_after:
+        description: "Run Deploy to EKS after commit (overlay=prod, cluster=your choice there)"
+        type: boolean
+        default: false
+      deploy_environment:
+        description: "Passed to Deploy workflow as EKS cluster selector (unified / dev / staging / prod)"
+        type: choice
+        required: true
+        default: unified
+        options:
+          - unified
+          - dev
+          - staging
+          - prod
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote-k8s-prod
+  cancel-in-progress: false
+
+jobs:
+  sync-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync image tags from dev overlay to prod
+        run: node .github/scripts/sync-overlay-tags.mjs --from overlays/dev/kustomization.yaml --to overlays/prod/kustomization.yaml
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet overlays/prod/kustomization.yaml; then
+            echo "No tag changes to promote."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add overlays/prod/kustomization.yaml
+          git commit -m "chore(k8s): promote image tags from dev to prod"
+          git push
+
+  trigger-deploy:
+    needs: sync-and-push
+    if: ${{ inputs.deploy_after }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch deploy (prod overlay)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh workflow run "Deploy to EKS" \
+            --ref "${{ github.event.repository.default_branch }}" \
+            -f environment="${{ inputs.deploy_environment }}" \
+            -f kustomize_overlay=prod
+        # إن فشل التشغيل التلقائي: Settings → Actions → General → Workflow permissions → «Read and write permissions» + «Allow GitHub Actions to create and approve pull requests» عند الحاجة، أو شغّل Deploy يدويًا بـ overlay=prod.
