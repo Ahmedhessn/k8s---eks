@@ -1,0 +1,72 @@
+## Apply manifests to EKS after infra apply (repository_dispatch) or manually.
+## Prod stack in infra is self-managed K8s — do not use this workflow for prod unless you align cluster naming.
+name: Deploy to EKS
+
+on:
+  repository_dispatch:
+    types: [eks-infra-applied]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "EKS environment (dev / staging)"
+        type: choice
+        required: true
+        options:
+          - dev
+          - staging
+      aws_region:
+        description: "AWS region"
+        type: string
+        default: "us-east-1"
+      project_prefix:
+        description: "Same as TF project var (default if empty)"
+        type: string
+        default: "k8s-self-managed-503459125797"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  kubectl-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve inputs
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ENV="${{ inputs.environment }}"
+            REGION="${{ inputs.aws_region }}"
+            PREFIX="${{ inputs.project_prefix }}"
+          else
+            ENV="${{ github.event.client_payload.environment }}"
+            REGION="${{ github.event.client_payload.region }}"
+            PREFIX="${{ github.event.client_payload.project_prefix }}"
+          fi
+          echo "environment=${ENV}" >> "$GITHUB_OUTPUT"
+          echo "region=${REGION}" >> "$GITHUB_OUTPUT"
+          echo "prefix=${PREFIX}" >> "$GITHUB_OUTPUT"
+          echo "cluster_name=${PREFIX}-${ENV}-eks" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout manifests
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_EKS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ steps.meta.outputs.region }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.30.0"
+
+      - name: kubeconfig + apply
+        env:
+          CLUSTER: ${{ steps.meta.outputs.cluster_name }}
+          REGION: ${{ steps.meta.outputs.region }}
+        run: |
+          aws eks update-kubeconfig --name "$CLUSTER" --region "$REGION"
+          kubectl version --client
+          kubectl apply -k .

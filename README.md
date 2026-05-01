@@ -12,3 +12,11 @@ kubectl apply -k .
 ```
 
 (من جذر هذا المستودع، بعد ضبط `kubectl` على الكلاستر.)
+
+## GitHub Actions — `deploy-eks.yml`
+
+- **workflow_dispatch:** اختر `dev` أو `staging` + المنطقة + بادئة المشروع (نفس `var.project` في Terraform).
+- **repository_dispatch** (`eks-infra-applied`): يُرسل من `infra---eks` بعد `terraform apply` عند تفعيل «notify k8s» (ليس لـ prod).
+
+**Secret:** `AWS_EKS_DEPLOY_ROLE_ARN` (OIDC أو مستخدم CI) بصلاحيات وصول لـ EKS API لاسم الكلاستر  
+`<project>-<env>-eks`.
