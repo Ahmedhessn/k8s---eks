@@ -14,15 +14,15 @@ resources:
   - hpa/apps.yaml
 images:
 
-  - name: k8s-Emad-128768042813-dev-apps
+  - name: k8s-emad-128768042813-dev-apps
     newName: 01061875164/tomcatapp
     newTag: 20260430-0307-02e09cc
-  - name: k8s-Emad-128768042813-dev-rabbitmq
+  - name: k8s-emad-128768042813-dev-rabbitmq
     newName: 01061875164/rabbitmq
     newTag: 20260430-0311-02e09cc
-  - name: k8s-Emad-128768042813-dev-memcached
+  - name: k8s-emad-128768042813-dev-memcached
     newName: 01061875164/memcached
     newTag: 20260430-0312-02e09cc
-  - name: k8s-Emad-128768042813-dev-mysql
+  - name: k8s-emad-128768042813-dev-mysql
     newName: 01061875164/dbmysql
     newTag: 20260430-0925-02e09cc
