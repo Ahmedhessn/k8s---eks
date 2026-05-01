@@ -8,10 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "EKS environment (dev / staging)"
+        description: "unified = single cluster k8s-emad-…-eks; dev/staging = legacy per-env clusters"
         type: choice
         required: true
         options:
+          - unified
           - dev
           - staging
       aws_region:
@@ -46,7 +47,11 @@ jobs:
           echo "environment=${ENV}" >> "$GITHUB_OUTPUT"
           echo "region=${REGION}" >> "$GITHUB_OUTPUT"
           echo "prefix=${PREFIX}" >> "$GITHUB_OUTPUT"
-          echo "cluster_name=${PREFIX}-${ENV}-eks" >> "$GITHUB_OUTPUT"
+          if [ "$ENV" = "unified" ]; then
+            echo "cluster_name=${PREFIX}-eks" >> "$GITHUB_OUTPUT"
+          else
+            echo "cluster_name=${PREFIX}-${ENV}-eks" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Checkout manifests
         uses: actions/checkout@v4

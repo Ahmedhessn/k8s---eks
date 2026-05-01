@@ -15,8 +15,9 @@ kubectl apply -k .
 
 ## GitHub Actions — `deploy-eks.yml`
 
-- **workflow_dispatch:** اختر `dev` أو `staging` + المنطقة + بادئة المشروع (نفس `var.project` في Terraform).
-- **repository_dispatch** (`eks-infra-applied`): يُرسل من `infra---eks` بعد `terraform apply` عند تفعيل «notify k8s» (ليس لـ prod).
+- **workflow_dispatch:** اختر **`unified`** للكلاستر الواحد (`<project>-eks`)، أو `dev` / `staging` للنموذج القديم (`<project>-<env>-eks`).
+- **repository_dispatch** (`eks-infra-applied`): من `infra---eks` مع `environment: unified` عند استخدام الـ stack الموحّد.
 
-**Secret:** `AWS_EKS_DEPLOY_ROLE_ARN` (OIDC أو مستخدم CI) بصلاحيات وصول لـ EKS API لاسم الكلاستر  
-`<project>-<env>-eks`.
+**ملاحظة:** dev و staging و prod **على نفس الـ EKS** يتم عزلهم بـ **namespaces** (مثلاً `vprofile-dev`، `vprofile-staging`) وليس بكلاسترات منفصلة.
+
+**Secret:** `AWS_EKS_DEPLOY_ROLE_ARN` — وصول لـ EKS API للكلاستر المناسب.
