@@ -8,8 +8,9 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: mysql
-  minReplicas: 2
-  maxReplicas: 5
+  # Must stay 1: Deployment uses a single RWO PVC; extra replicas break readiness / data.
+  minReplicas: 1
+  maxReplicas: 1
   metrics:
     - type: Resource
       resource:
