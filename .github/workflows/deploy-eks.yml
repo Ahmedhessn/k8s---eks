@@ -84,7 +84,9 @@ jobs:
         env:
           CLUSTER: ${{ steps.meta.outputs.cluster_name }}
           REGION: ${{ steps.meta.outputs.region }}
+          INGRESS_NGINX_MANIFEST: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/aws/deploy.yaml
         run: |
           aws eks update-kubeconfig --name "$CLUSTER" --region "$REGION"
           kubectl version --client
+          kubectl apply -f "$INGRESS_NGINX_MANIFEST"
           kubectl apply -k "overlays/${{ steps.meta.outputs.kustomize_overlay }}"

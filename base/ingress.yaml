@@ -1,11 +1,11 @@
+# HTTP(S) from ingress-nginx NLB → Service apps:8080. Install controller via deploy-eks.yml (not the app docker/nginx proxy).
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: apps
   namespace: vprofile
-  annotations:
-    kubernetes.io/ingress.class: nginx
 spec:
+  ingressClassName: nginx
   rules:
     - http:
         paths:
