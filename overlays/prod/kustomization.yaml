@@ -8,10 +8,10 @@ images:
     newTag: 20260501-1655-087117b
   - name: k8s-emad-128768042813-dev-rabbitmq
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-rabbitmq
-    newTag: latest
+    newTag: 20260501-1658-087117b
   - name: k8s-emad-128768042813-dev-memcached
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-memcached
-    newTag: latest
+    newTag: 20260501-1700-087117b
   - name: k8s-emad-128768042813-dev-mysql
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-mysql
-    newTag: latest
+    newTag: 20260501-1701-087117b
