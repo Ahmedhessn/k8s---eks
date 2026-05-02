@@ -19,6 +19,33 @@ kubectl apply -k overlays/prod
 
 (بعد ضبط `kubectl` على الكلاستر المطلوب.)
 
+## Ingress NGINX (عشان الـ `Ingress` ياخد عنوان)
+
+الـ manifest `base/ingress.yaml` يستخدم `ingressClassName: nginx` — لازم يكون فيه **Ingress Controller** على الكلاستر.
+
+**بعد تثبيت Helm 3** وضبط `kubectl` على EKS:
+
+```powershell
+cd k8s---eks
+.\scripts\install-ingress-nginx.ps1
+```
+
+أو على Linux/macOS:
+
+```bash
+chmod +x scripts/install-ingress-nginx.sh
+./scripts/install-ingress-nginx.sh
+```
+
+ثم راقب حتى يظهر عنوان على `ingress-nginx-controller`:
+
+```bash
+kubectl get svc -n ingress-nginx ingress-nginx-controller -w
+kubectl get ingress -n vprofile
+```
+
+لو تحتاج NLB داخلي فقط، غيّر في `scripts/values-ingress-nginx.yaml` القيمة إلى `internal` بدل `internet-facing`.
+
 ## GitHub Actions — `deploy-eks.yml`
 
 - **workflow_dispatch:** اختر **`unified`** للكلاستر الواحد (`<project>-eks`)، أو `dev` / `staging` / **`prod`** (`<project>-<env>-eks`)، واختر **`kustomize_overlay`**: `dev` (افتراضي بعد الـ build) أو `prod` بعد الـ promote.
