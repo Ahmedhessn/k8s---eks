@@ -16,17 +16,22 @@ metadata:
   name: mysql-pvc
   namespace: vprofile
 spec:
-  storageClassName: gp3
-  accessModes: ["ReadWriteOnce"]
+  storageClassName: efs
+  accessModes: ["ReadWriteMany"]
   resources:
     requests:
-      storage: 10Gi
+      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: vprofile
+    app: mysql
 spec:
   # Single replica because it uses a single RWO PVC.
   replicas: 1
@@ -39,10 +44,25 @@ spec:
     metadata:
       labels:
         app: mysql
+        app.kubernetes.io/name: mysql
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: vprofile
+      annotations:
+        prometheus.io/scrape: "false"
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        fsGroup: 999
       containers:
         - name: mysql
           image: k8s-emad-128768042813-dev-mysql
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 250m
@@ -58,6 +78,10 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/mysql
+            - name: run
+              mountPath: /var/run/mysqld
+            - name: tmp
+              mountPath: /tmp
           readinessProbe:
             tcpSocket:
               port: 3306
@@ -67,12 +91,24 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: mysql-pvc
+        - name: run
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mysql
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: vprofile
+    vprofile.io/metrics: exporter-required
+    app: mysql
+  annotations:
+    prometheus.io/scrape: "false"
 spec:
   selector:
     app: mysql

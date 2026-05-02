@@ -3,6 +3,11 @@ kind: Deployment
 metadata:
   name: apps
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: apps
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: vprofile
+    app: apps
 spec:
   replicas: 2
   selector:
@@ -12,10 +17,26 @@ spec:
     metadata:
       labels:
         app: apps
+        app.kubernetes.io/name: apps
+        app.kubernetes.io/component: application
+        app.kubernetes.io/part-of: vprofile
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: /metrics
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: apps
           image: k8s-emad-128768042813-dev-apps
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 200m
@@ -42,12 +63,40 @@ spec:
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 20
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: tomcat-temp
+              mountPath: /usr/local/tomcat/temp
+            - name: tomcat-work
+              mountPath: /usr/local/tomcat/work
+            - name: tomcat-logs
+              mountPath: /usr/local/tomcat/logs
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: tomcat-temp
+          emptyDir: {}
+        - name: tomcat-work
+          emptyDir: {}
+        - name: tomcat-logs
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: apps
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: apps
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: vprofile
+    vprofile.io/metrics: enabled
+    app: apps
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: /metrics
 spec:
   selector:
     app: apps

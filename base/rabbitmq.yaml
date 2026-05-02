@@ -1,9 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-headless
+  namespace: vprofile
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/component: message-queue
+    app.kubernetes.io/part-of: vprofile
+    app.kubernetes.io/service-type: headless
+    app: rabbitmq
+spec:
+  clusterIP: None
+  selector:
+    app: rabbitmq
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: rabbitmq
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/component: message-queue
+    app.kubernetes.io/part-of: vprofile
+    app: rabbitmq
 spec:
+  serviceName: rabbitmq-headless
   replicas: 2
   selector:
     matchLabels:
@@ -12,10 +41,25 @@ spec:
     metadata:
       labels:
         app: rabbitmq
+        app.kubernetes.io/name: rabbitmq
+        app.kubernetes.io/component: message-queue
+        app.kubernetes.io/part-of: vprofile
+      annotations:
+        prometheus.io/scrape: "false"
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        fsGroup: 999
       containers:
         - name: rabbitmq
           image: k8s-emad-128768042813-dev-rabbitmq
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 200m
@@ -31,17 +75,42 @@ spec:
               value: test
             - name: RABBITMQ_DEFAULT_PASS
               value: test
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+            - name: tmp
+              mountPath: /tmp
           readinessProbe:
             tcpSocket:
               port: 5672
             initialDelaySeconds: 10
             periodSeconds: 5
+      volumes:
+        - name: tmp
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: rabbitmq-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: efs
+        resources:
+          requests:
+            storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: rabbitmq
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/component: message-queue
+    app.kubernetes.io/part-of: vprofile
+    vprofile.io/metrics: plugin-or-exporter-required
+    app: rabbitmq
+  annotations:
+    prometheus.io/scrape: "false"
 spec:
   selector:
     app: rabbitmq
@@ -52,4 +121,3 @@ spec:
     - name: management
       port: 15672
       targetPort: 15672
-

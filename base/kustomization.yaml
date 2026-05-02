@@ -4,6 +4,7 @@ namespace: vprofile
 resources:
   - namespace.yaml
   - storageclass-gp3.yaml
+  - storageclass-efs.yaml
   - mysql.yaml
   - memcached.yaml
   - rabbitmq.yaml

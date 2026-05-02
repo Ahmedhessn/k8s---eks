@@ -3,6 +3,11 @@ kind: Deployment
 metadata:
   name: memcached
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: memcached
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: vprofile
+    app: memcached
 spec:
   replicas: 2
   selector:
@@ -12,10 +17,24 @@ spec:
     metadata:
       labels:
         app: memcached
+        app.kubernetes.io/name: memcached
+        app.kubernetes.io/component: cache
+        app.kubernetes.io/part-of: vprofile
+      annotations:
+        prometheus.io/scrape: "false"
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: memcached
           image: k8s-emad-128768042813-dev-memcached
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 50m
@@ -26,17 +45,31 @@ spec:
           ports:
             - containerPort: 11211
           args: ["-m", "256", "-I", "2m"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           readinessProbe:
             tcpSocket:
               port: 11211
             initialDelaySeconds: 5
             periodSeconds: 5
+      volumes:
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: memcached
   namespace: vprofile
+  labels:
+    app.kubernetes.io/name: memcached
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: vprofile
+    vprofile.io/metrics: exporter-required
+    app: memcached
+  annotations:
+    prometheus.io/scrape: "false"
 spec:
   selector:
     app: memcached

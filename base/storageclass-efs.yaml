@@ -1,0 +1,17 @@
+# EFS Standard: replace fileSystemId with your EFS ID (e.g. fs-abc12345).
+# Prereqs: EFS file system in the cluster VPC + Amazon EFS CSI driver add-on.
+# https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: efs
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: fs-CHANGEME
+  directoryPerms: "700"
+  gidRangeStart: "1000"
+  gidRangeEnd: "2000"
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+allowVolumeExpansion: false
