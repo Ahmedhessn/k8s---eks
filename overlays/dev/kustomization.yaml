@@ -5,13 +5,13 @@ resources:
 images:
   - name: k8s-emad-128768042813-dev-apps
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-tomcat
-    newTag: 20260430-0307-02e09cc
+    newTag: latest
   - name: k8s-emad-128768042813-dev-rabbitmq
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-rabbitmq
-    newTag: 20260430-0311-02e09cc
+    newTag: latest
   - name: k8s-emad-128768042813-dev-memcached
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-memcached
-    newTag: 20260430-0312-02e09cc
+    newTag: latest
   - name: k8s-emad-128768042813-dev-mysql
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-mysql
-    newTag: 20260430-0925-02e09cc
+    newTag: latest
