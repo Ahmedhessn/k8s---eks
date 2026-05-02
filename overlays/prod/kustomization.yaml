@@ -5,7 +5,7 @@ resources:
 images:
   - name: k8s-emad-128768042813-dev-apps
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-tomcat
-    newTag: latest
+    newTag: 20260501-1655-087117b
   - name: k8s-emad-128768042813-dev-rabbitmq
     newName: 128768042813.dkr.ecr.us-east-1.amazonaws.com/k8s-emad-128768042813-rabbitmq
     newTag: latest
